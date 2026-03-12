@@ -1,14 +1,17 @@
 name: 'Normalize PR Title and Add Jira Link'
 description: 'Automatically formats PR titles to Jira key format (PDD-123) and appends a Jira link to the PR body.'
-author: 'your-github-username'
+author: 'vkozlov-sit'
 
 branding:
   icon: 'link'
   color: 'blue'
 
 inputs:
+  jira-project-key:
+    description: 'Jira Project Key to be included in the PR title and body, e.g. PDD-123'
+    required: true
   jira-issue-url:
-    description: 'Base URL for Jira issues, e.g. https://yourcompany.atlassian.net/browse'
+    description: 'Base URL for Jira issues, e.g. https://yourcompany.atlassian.net'
     required: true
   github-token:
     description: 'GitHub token with pull-requests: write permission'

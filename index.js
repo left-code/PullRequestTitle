@@ -3,6 +3,7 @@ const github = require('@actions/github');
 
 async function run() {
   try {
+    const jiraProjectKey = core.getInput('jira-project-key', { required: true });
     const jiraIssueUrl = core.getInput('jira-issue-url', { required: true });
     const token = core.getInput('github-token', { required: true });
 
@@ -19,7 +20,7 @@ async function run() {
     const body = (pr.body ?? '').trim();
 
     // Match: "pdd 123 some text" or "pdd-123 some text" or "pdd 123 *6 some text"
-    const match = title.match(/pdd[\s\-]?(\d+)(?:\s+\*\d+)?(.*)/i);
+    const match = title.match(new RegExp(`${jiraProjectKey}[\\s\\-]?(\\d+)(?:\\s+\\*\\d+)?(.*)`, 'i'));
     if (!match) {
       core.info('No Jira issue pattern found in title, skipping.');
       return;
@@ -27,11 +28,11 @@ async function run() {
 
     const issueNumber = match[1];
     const remainingText = match[2].trim();
-    const jiraKey = `PDD-${issueNumber}`;
-    const jiraUrl = `${jiraIssueUrl}/${jiraKey}`;
-    const jiraLink = `🔗 Jira: [${jiraKey}](${jiraUrl})`;
+    const jiraIssueNumber = `${jiraProjectKey}-${issueNumber}`;
+    const jiraUrl = `${jiraIssueUrl}/browse/${jiraIssueNumber}`;
+    const jiraLink = `🔗 Jira: [${jiraIssueNumber}](${jiraUrl})`;
 
-    const newTitle = remainingText ? `${jiraKey} ${remainingText}` : jiraKey;
+    const newTitle = remainingText ? `${jiraIssueNumber} ${remainingText}` : jiraIssueNumber;
     const newBody = body.includes(jiraUrl)
       ? body
       : body.length > 0
@@ -57,7 +58,7 @@ async function run() {
       body: newBody,
     });
 
-    core.setOutput('jira-key', jiraKey);
+    core.setOutput('jira-issue-number', jiraIssueNumber);
     core.setOutput('jira-url', jiraUrl);
     core.setOutput('new-title', newTitle);
 

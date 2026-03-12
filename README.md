@@ -34,9 +34,10 @@ jobs:
       pull-requests: write
     steps:
       - name: Normalize PR title and add Jira link
-        uses: your-username/pr-jira-link-action@v1
+        uses: vkozlov-sit/pr-jira-link-action@v1
         with:
-          jira-issue-url: ${{ vars.JIRA_ISSUE_URL }}
+          jira-project-key: ${{vars.JIRA_PROJECT_KEY}}
+          jira-issue-url: ${{ vars.JIRA_URL }}
 ```
 
 ---
@@ -45,6 +46,7 @@ jobs:
 
 | Input | Required | Default | Description |
 |-------|----------|---------|-------------|
+| `jira-project-key`| ✅ Yes | — | Jira Project Key to be included in the PR title and body, e.g. PDD-123' |
 | `jira-issue-url` | ✅ Yes | — | Base URL for Jira issues. Example: `https://yourcompany.atlassian.net/browse` |
 | `github-token` | ✅ Yes | `${{ github.token }}` | GitHub token with `pull-requests: write` permission. The default is sufficient in most cases. |
 
@@ -52,11 +54,8 @@ jobs:
 
 1. Go to your repository → **Settings** → **Secrets and variables** → **Actions**
 2. Click the **Variables** tab → **New repository variable**
-3. Set **Name** to `JIRA_ISSUE_URL` and **Value** to your base Jira URL:
-
-```
-https://yourcompany.atlassian.net/browse
-```
+3. Set **Name** to `JIRA_PROJECT_KEY` and **Value** to your Project Key
+4. Set **Name** to `JIRA_ISSUE_URL` and **Value** to your base Jira URL
 
 ---
 
@@ -66,7 +65,7 @@ These outputs can be used in subsequent steps within the same job.
 
 | Output | Description | Example |
 |--------|-------------|---------|
-| `jira-key` | The extracted Jira issue key | `PDD-123` |
+| `jira-issue-number` | The extracted Jira issue key | `PDD-123` |
 | `jira-url` | The full URL to the Jira issue | `https://yourcompany.atlassian.net/browse/PDD-123` |
 | `new-title` | The normalized PR title | `PDD-123 fix login bug` |
 
@@ -76,13 +75,14 @@ These outputs can be used in subsequent steps within the same job.
 steps:
   - name: Normalize PR title and add Jira link
     id: jira
-    uses: your-username/pr-jira-link-action@v1
+    uses: vkozlov-sit/pr-jira-link-action@v1
     with:
+      jira-project-key: ${{ vars.JIRA_PROJECT_KEY }}
       jira-issue-url: ${{ vars.JIRA_ISSUE_URL }}
 
   - name: Print Jira info
     run: |
-      echo "Jira Key: ${{ steps.jira.outputs.jira-key }}"
+      echo "Jira Issue Number: ${{ steps.jira.outputs.jira-issue-number }}"
       echo "Jira URL: ${{ steps.jira.outputs.jira-url }}"
       echo "New Title: ${{ steps.jira.outputs.new-title }}"
 
@@ -91,7 +91,7 @@ steps:
     with:
       payload: |
         {
-          "text": "New PR linked to ${{ steps.jira.outputs.jira-key }}: ${{ steps.jira.outputs.jira-url }}"
+          "text": "New PR linked to ${{ steps.jira.outputs.jira-issue-number }}: ${{ steps.jira.outputs.jira-url }}"
         }
 ```
 
